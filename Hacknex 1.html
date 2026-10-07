@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HNX26PSI01: Multimodal Document Intelligence</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --primary: #0066cc;
+      --text: #222222;
+      --border: #e0e0e0;
+      --tag-bg: #eef5ff;
+      --tag-color: #0055b3;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: #1e293b;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    header span {
+      font-size: 0.85rem;
+      background: #334155;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 320px 1fr 380px;
+      gap: 1rem;
+      padding: 1rem;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #475569;
+    }
+
+    .card-body {
+      padding: 1rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* Document Sidebar */
+    .doc-list {
+      list-style: none;
+    }
+
+    .doc-item {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .doc-item:hover, .doc-item.active {
+      border-color: var(--primary);
+      background: #f0f7ff;
+    }
+
+    .doc-title {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .doc-meta {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* Viewer Panel */
+    .viewer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #e2e8f0;
+      position: relative;
+    }
+
+    .doc-page {
+      background: white;
+      width: 90%;
+      height: 95%;
+      border-radius: 4px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .page-section {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+
+    .page-section.highlight {
+      border-color: #f59e0b;
+      background: #fffbeeb3;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+
+    /* Dummy Data Visuals */
+    .mock-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .mock-table th, .mock-table td {
+      border: 1px solid #cbd5e1;
+      padding: 4px 8px;
+      text-align: left;
+    }
+
+    .mock-chart {
+      height: 120px;
+      background: #f1f5f9;
+      border: 1px dashed #94a3b8;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      padding: 10px;
+      margin-top: 0.5rem;
+    }
+
+    .chart-bar {
+      width: 20%;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+      text-align: center;
+      color: white;
+      font-size: 0.7rem;
+    }
+
+    /* Query & Answer Panel */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .message {
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .message.user {
+      background: #e2e8f0;
+      align-self: flex-end;
+      max-width: 85%;
+    }
+
+    .message.system {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      align-self: flex-start;
+      width: 100%;
+    }
+
+    .citation-box {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    .citation-tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--tag-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-right: 4px;
+      cursor: pointer;
+    }
+
+    .input-box {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .input-box input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .input-box button {
+      padding: 0.5rem 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .input-box button:hover {
+      background: #0052a3;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>HNX26PSI01: Multimodal Document Intelligence</h1>
+    <span>RAG + Vision-Language Engine</span>
+  </header>
+
+  <div class="container">
+    <!-- Document Navigation Sidebar -->
+    <div class="card">
+      <div class="card-header">Document Library</div>
+      <div class="card-body">
+        <ul class="doc-list">
+          <li class="doc-item active" onclick="loadDoc(1)">
+            <div class="doc-title">Q4_Performance_Report.pdf</div>
+            <div class="doc-meta">3 pages • Scanned PDF + Tables + Charts</div>
+          </li>
+          <li class="doc-item" onclick="loadDoc(2)">
+            <div class="doc-title">Operations_Audit_2025.pdf</div>
+            <div class="doc-meta">5 pages • Multi-column Text</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Multimodal Document Viewer -->
+    <div class="card">
+      <div class="card-header" id="viewer-header">Document Viewer — Q4_Performance_Report.pdf (Page 2)</div>
+      <div class="card-body viewer-container">
+        <div class="doc-page" id="doc-page">
+          <div class="page-section" id="sec-text">
+            <h3>1. Executive Summary & Production Overview</h3>
+            <p style="font-size: 0.85rem; color: #475569; margin-top: 0.5rem;">
+              During Q4, operational efficiency dropped due to unscheduled maintenance in Facility B. 
+              However, automation upgrades in Facility A offset overall losses.
+            </p>
+          </div>
+
+          <div class="page-section" id="sec-table">
+            <h4>Table 2.1: Efficiency Metrics by Quarter</h4>
+            <table class="mock-table">
+              <thead>
+                <tr>
+                  <th>Quarter</th>
+                  <th>Facility A (%)</th>
+                  <th>Facility B (%)</th>
+                  <th>Downtime (hrs)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Q2 2025</td><td>88%</td><td>91%</td><td>12</td></tr>
+                <tr><td>Q3 2025</td><td>89%</td><td>85%</td><td>24</td></tr>
+                <tr><td>Q4 2025</td><td>94%</td><td>72%</td><td>58</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="page-section" id="sec-chart">
+            <h4>Chart 2.2: Production Output vs Maintenance Cost</h4>
+            <div class="mock-chart">
+              <div class="chart-bar" style="height: 60%;">Q2<br>$40k</div>
+              <div class="chart-bar" style="height: 75%;">Q3<br>$65k</div>
+              <div class="chart-bar" style="height: 95%; background-color: #e11d48;">Q4<br>$120k</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multimodal Question Answering Panel -->
+    <div class="card">
+      <div class="card-header">Multimodal Assistant & Citations</div>
+      <div class="card-body chat-container">
+        <div class="messages" id="chat-messages">
+          <div class="message system">
+            <strong>System Ready.</strong> Ask a question requiring text, table, or chart synthesis across documents.
+          </div>
+        </div>
+        
+        <div class="input-box">
+          <input type="text" id="user-input" placeholder="e.g., Compare production efficiency between Q2 and Q4...">
+          <button onclick="askQuestion()">Ask</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function askQuestion() {
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Add user message
+      const messagesContainer = document.getElementById('chat-messages');
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.innerText = text;
+      messagesContainer.appendChild(userMsg);
+
+      input.value = '';
+
+      // Simulate system response with page-level citations
+      setTimeout(() => {
+        const sysMsg = document.createElement('div');
+        sysMsg.className = 'message system';
+        sysMsg.innerHTML = `
+          <strong>Answer:</strong><br>
+          Between Q2 and Q4, production efficiency at Facility B declined from <strong>91% to 72%</strong>, while maintenance costs rose significantly to <strong>$120,000</strong>. The three primary drivers were:
+          <ol style="margin-left: 1.2rem; margin-top: 0.4rem;">
+            <li>Unscheduled maintenance in Facility B [Text]</li>
+            <li>A 46-hour increase in total downtime [Table 2.1]</li>
+            <li>Surging maintenance expenditure in Q4 [Chart 2.2]</li>
+          </ol>
+          <div class="citation-box">
+            <strong>Exact Provenance & Sources:</strong><br>
+            <span class="citation-tag" onclick="highlightSection('sec-text')">📄 Q4_Report.pdf | Pg 2 | Sec 1</span>
+            <span class="citation-tag" onclick="highlightSection('sec-table')">📊 Q4_Report.pdf | Pg 2 | Table 2.1</span>
+            <span class="citation-tag" onclick="highlightSection('sec-chart')">📈 Q4_Report.pdf | Pg 2 | Chart 2.2</span>
+          </div>
+        `;
+        messagesContainer.appendChild(sysMsg);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 600);
+    }
+
+    function highlightSection(sectionId) {
+      // Clear previous highlights
+      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('highlight'));
+      
+      // Add highlight to selected target
+      const target = document.getElementById(sectionId);
+      if (target) {
+        target.classList.add('highlight');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function loadDoc(id) {
+      document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doc Scan | Multimodal Intelligence</title>
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --panel-bg: #111827;
+            --panel-border: #1f293d;
+            --accent-blue: #2563eb;
+            --accent-blue-hover: #1d4ed8;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --highlight-border: #ef4444;
+            --highlight-bg: rgba(239, 68, 68, 0.15);
+            --doc-bg: #ffffff;
+            --doc-text: #0f172a;
+        }
+
+        /* Light Theme Modifiers */
+        body.light-theme {
+            --bg-main: #f1f5f9;
+            --panel-bg: #ffffff;
+            --panel-border: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 14px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* Top Header Navigation */
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 900;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-action {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            border-color: var(--accent-blue);
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .badge {
+            background-color: rgba(37, 99, 235, 0.12);
+            color: #60a5fa;
+            font-size: 0.72rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            font-weight: 600;
+        }
+
+        /* Toolbar Options Header */
+        .toolbar {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 6px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .select-input {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            border: 1px solid var(--panel-border);
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.75rem;
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: grid;
+            grid-template-columns: 300px 1fr 440px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Sidebar: Document Manager */
+        .sidebar {
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            width: 100%;
+            background-color: var(--bg-main);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .upload-dropzone {
+            border: 1px dashed var(--panel-border);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0 16px 12px 16px;
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        .upload-dropzone:hover {
+            border-color: var(--accent-blue);
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+
+        .doc-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+            padding: 0 12px 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .doc-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .doc-item.active {
+            border-color: var(--accent-blue);
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .doc-item-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .doc-item-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Center Column: Interactive Visual Canvas */
+        .viewer-container {
+            background-color: #050811;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 24px;
+            align-items: center;
+            position: relative;
+        }
+
+        .doc-canvas {
+            width: 100%;
+            max-width: 700px;
+            background-color: var(--doc-bg);
+            color: var(--doc-text);
+            padding: 40px;
+            border-radius: 6px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+            margin-bottom: 24px;
+            transform-origin: top center;
+            transition: transform 0.2s ease;
+        }
+
+        .doc-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .doc-header h2 {
+            font-size: 1.25rem;
+            color: #0f172a;
+        }
+
+        .doc-canvas p {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #334155;
+            margin-bottom: 16px;
+        }
+
+        /* Clean Embedded Table */
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.8rem;
+        }
+
+        .doc-table th {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            font-weight: 700;
+            text-align: left;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .doc-table td {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+        }
+
+        /* Chart Container */
+        .chart-box {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .chart-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 16px;
+            height: 120px;
+            padding-top: 20px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .chart-bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .chart-bar {
+            width: 100%;
+            background-color: var(--accent-blue);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+        }
+
+        .bar-val {
+            position: absolute;
+            top: -18px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .bar-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        /* Dynamic Bounding Box Overlay */
+        .bounding-box {
+            position: absolute;
+            border: 2px solid var(--highlight-border);
+            background-color: var(--highlight-bg);
+            border-radius: 4px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+            z-index: 5;
+            display: none;
+        }
+
+        .bounding-box-label {
+            position: absolute;
+            top: -22px;
+            left: -2px;
+            background-color: var(--highlight-border);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px 3px 0 0;
+            white-space: nowrap;
+        }
+
+        /* Right Panel: AI Reasoning & Multi-Modal Citations */
+        .query-panel {
+            background-color: var(--panel-bg);
+            border-left: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--panel-border);
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .panel-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent-blue);
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            max-width: 88%;
+            background-color: rgba(37, 99, 235, 0.15);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            padding: 10px 14px;
+            border-radius: 8px 8px 0 8px;
+            color: var(--text-primary);
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        .citation-card {
+            background-color: var(--bg-main);
+            border: 1px solid var(--panel-border);
+            border-left: 3px solid var(--accent-green);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .citation-card:hover {
+            border-color: var(--accent-green);
+            background-color: rgba(16, 185, 129, 0.05);
+        }
+
+        .citation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .citation-type {
+            font-size: 0.65rem;
+            padding: 1px 5px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .type-table { background-color: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); }
+        .type-chart { background-color: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+
+        .citation-text {
+            font-size: 0.78rem;
+            color: var(--text-primary);
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* Input Area */
+        .input-container {
+            padding: 12px 16px;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            gap: 8px;
+            background-color: var(--panel-bg);
+        }
+
+        .chat-input {
+            flex: 1;
+            background-color: var(--bg-main);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-blue-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="brand">
+            <div class="brand-logo">DS</div>
+            <span>Doc Scan</span>
+            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">| Multimodal Intelligence System</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-action" onclick="reindexOCR()">↻ Re-index OCR</button>
+            <button class="btn-action" onclick="exportReport()">📥 Export Report</button>
+            <button class="btn-action" onclick="toggleTheme()">🌓 Theme</button>
+            <span class="badge">HNX26PSI01</span>
+        </div>
+    </header>
+
+    <!-- Interactive Options Toolbar -->
+    <div class="toolbar">
+        <div class="tool-group">
+            <span><strong>View Mode:</strong></span>
+            <select class="select-input" onchange="changeViewMode(this.value)">
+                <option value="dual">Dual View (Canvas + AI)</option>
+                <option value="doc">Document Only</option>
+                <option value="chat">AI Reasoning Only</option>
+            </select>
+            
+            <span style="margin-left: 12px;"><strong>Page Jump:</strong></span>
+            <button class="btn-action" onclick="jumpToPage('doc-page-1')">Page 1</button>
+            <button class="btn-action" onclick="jumpToPage('doc-page-2')">Page 2</button>
+        </div>
+
+        <div class="tool-group">
+            <span><strong>Zoom Canvas:</strong></span>
+            <button class="btn-action" onclick="adjustZoom(-0.1)">-</button>
+            <span id="zoom-level">100%</span>
+            <button class="btn-action" onclick="adjustZoom(0.1)">+</button>
+            <button class="btn-action" onclick="resetZoom()">Reset</button>
+        </div>
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace" id="workspace">
+
+        <!-- Sidebar: Document Explorer -->
+        <div class="sidebar" id="sidebar-panel">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <span>Document Collection</span>
+                    <span style="color: var(--accent-cyan);">2 Docs</span>
+                </div>
+                <input type="text" class="search-box" placeholder="Search collection...">
+            </div>
+
+            <div class="upload-dropzone">
+                <div style="font-weight: 600; font-size: 0.8rem;">+ Upload New Doc</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">PDFs, Scans, Tables, Charts</div>
+            </div>
+
+            <ul class="doc-list">
+                <li class="doc-item active">
+                    <div class="doc-item-title">Q2_Q4_Production_Report.pdf</div>
+                    <div class="doc-item-meta">
+                        <span>2 Pages • Mixed</span>
+                        <span style="color: var(--accent-green);">Parsed</span>
+                    </div>
+                </li>
+                <li class="doc-item">
+                    <div class="doc-item-title">Supply_Chain_Telemetry.pdf</div>
+                    <div class="doc-item-meta">
+                        <span>1 Page • Scanned</span>
+                        <span style="color: var(--accent-green);">Parsed</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Center Document Viewer -->
+        <div class="viewer-container" id="viewer-panel">
+            
+            <!-- Page 1 Canvas -->
+            <div class="doc-canvas" id="doc-page-1">
+                <div id="bbox-p1-table" class="bounding-box">
+                    <div class="bounding-box-label">Page 1 • Table 1.1 [x:35, y:120, w:570, h:120]</div>
+                </div>
+
+                <div class="doc-header">
+                    <h2>1. Executive Summary & Efficiency Ratings</h2>
+                    <span style="font-size: 0.75rem; color: #64748b;">Page 1 of 2</span>
+                </div>
+
+                <p>
+                    This document analyzes operational metrics comparing Q2 and Q4 manufacturing outputs. 
+                    Baseline efficiency in Q2 was impacted by logistics delays, while Q4 integrated vision automation 
+                    and predictive maintenance.
+                </p>
+
+                <table class="doc-table">
+                    <thead>
+                        <tr>
+                            <th>Quarter</th>
+                            <th>Efficiency (%)</th>
+                            <th>Downtime (Hrs)</th>
+                            <th>Scrap Rate (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Q2 baseline</td>
+                            <td>68%</td>
+                            <td>142 hrs</td>
+                            <td>4.2%</td>
+                        </tr>
+                        <tr>
+                            <td>Q4 final</td>
+                            <td>89%</td>
+                            <td>38 hrs</td>
+                            <td>1.1%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Page 2 Canvas -->
+            <div class="doc-canvas" id="doc-page-2">
+                <div id="bbox-p2-chart" class="bounding-box">
+                    <div class="bounding-box-label">Page 2 • Chart Figure 2.1 [x:35, y:130, w:570, h:200]</div>
+                </div>
+
+                <div class="doc-header">
+                    <h2>2. Key Drivers & Telemetry Breakdown</h2>
+                    <span style="font-size: 0.75rem; color: #64748b;">Page 2 of 2</span>
+                </div>
+
+                <p>
+                    Visual breakdown of telemetry downtime hours eliminated between Q2 and Q4. Data cross-verified 
+                    with machinery sensors and supervisor shift reports.
+                </p>
+
+                <div class="chart-box">
+                    <div class="chart-title">
+                        <span>Figure 2.1: Downtime Reduction Breakdown (Hours Saved)</span>
+                        <span style="color: var(--accent-purple); font-size: 0.7rem;">[Visual Chart Region]</span>
+                    </div>
+                    <div class="chart-bars">
+                        <div class="chart-bar-col">
+                            <div class="chart-bar" style="height: 100%;">
+                                <div class="bar-val">59h</div>
+                            </div>
+                            <div class="bar-label">Logistics Re-routing</div>
+                        </div>
+                        <div class="chart-bar-col">
+                            <div class="chart-bar" style="height: 76%;">
+                                <div class="bar-val">45h</div>
+                            </div>
+                            <div class="bar-label">Automated Inspection</div>
+                        </div>
+                        <div class="chart-bar-col">
+                            <div class="chart-bar" style="height: 64%;">
+                                <div class="bar-val">38h</div>
+                            </div>
+                            <div class="bar-label">Predictive Maintenance</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Side Query Panel -->
+        <div class="query-panel" id="query-panel">
+            <div class="panel-tab-bar">
+                <div class="panel-tab active">Doc Scan AI Assistant</div>
+            </div>
+
+            <div class="chat-container" id="chat-tab">
+                <div class="message user">
+                    Compare production efficiency between Q2 and Q4, identify the three biggest reasons for the change, and show me the proof.
+                </div>
+
+                <div class="message assistant">
+                    <p>Production efficiency increased by <strong>21 percentage points</strong> (from <strong>68% in Q2</strong> to <strong>89% in Q4</strong>).</p>
+
+                    <div class="citation-card" onclick="highlightEvidence('bbox-p1-table', 'doc-page-1')">
+                        <div class="citation-header">
+                            <span>Q2_Q4_Production_Report.pdf • Page 1</span>
+                            <span class="citation-type type-table">Table 1.1</span>
+                        </div>
+                        <div class="citation-text">"Q2 baseline: 68% Efficiency | Q4 final: 89% Efficiency"</div>
+                    </div>
+
+                    <p style="margin-top: 10px;">The top three efficiency drivers identified via visual chart analysis:</p>
+                    <ol style="padding-left: 18px; margin-top: 6px; font-size: 0.82rem; color: var(--text-secondary);">
+                        <li><strong>Logistics Pipeline Re-routing:</strong> Saved 59 hrs.</li>
+                        <li><strong>Automated Vision Inspection:</strong> Saved 45 hrs.</li>
+                        <li><strong>Predictive Maintenance:</strong> Saved 38 hrs.</li>
+                    </ol>
+
+                    <div class="citation-card" onclick="highlightEvidence('bbox-p2-chart', 'doc-page-2')">
+                        <div class="citation-header">
+                            <span>Q2_Q4_Production_Report.pdf • Page 2</span>
+                            <span class="citation-type type-chart">Chart Figure 2.1</span>
+                        </div>
+                        <div class="citation-text">"Figure 2.1: Telemetry chart breakdown of downtime reduction."</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Ask questions on documents, scans, charts...">
+                <button class="btn-submit" onclick="submitQuery()">Ask</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentZoom = 1.0;
+
+        function highlightEvidence(boxId, pageId) {
+            document.querySelectorAll('.bounding-box').forEach(el => el.style.display = 'none');
+            const bbox = document.getElementById(boxId);
+            const page = document.getElementById(pageId);
+
+            if (bbox && page) {
+                bbox.style.display = 'block';
+                if (boxId === 'bbox-p1-table') {
+                    const table = page.querySelector('.doc-table');
+                    bbox.style.top = table.offsetTop + 'px';
+                    bbox.style.left = table.offsetLeft + 'px';
+                    bbox.style.width = table.offsetWidth + 'px';
+                    bbox.style.height = table.offsetHeight + 'px';
+                } else if (boxId === 'bbox-p2-chart') {
+                    const chart = page.querySelector('.chart-box');
+                    bbox.style.top = chart.offsetTop + 'px';
+                    bbox.style.left = chart.offsetLeft + 'px';
+                    bbox.style.width = chart.offsetWidth + 'px';
+                    bbox.style.height = chart.offsetHeight + 'px';
+                }
+                page.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function adjustZoom(delta) {
+            currentZoom = Math.min(Math.max(0.6, currentZoom + delta), 1.4);
+            document.querySelectorAll('.doc-canvas').forEach(el => {
+                el.style.transform = `scale(${currentZoom})`;
+            });
+            document.getElementById('zoom-level').innerText = `${Math.round(currentZoom * 100)}%`;
+        }
+
+        function resetZoom() {
+            currentZoom = 1.0;
+            document.querySelectorAll('.doc-canvas').forEach(el => {
+                el.style.transform = 'scale(1)';
+            });
+            document.getElementById('zoom-level').innerText = '100%';
+        }
+
+        function jumpToPage(pageId) {
+            const page = document.getElementById(pageId);
+            if (page) page.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        function changeViewMode(mode) {
+            const workspace = document.getElementById('workspace');
+            const sidebar = document.getElementById('sidebar-panel');
+            const viewer = document.getElementById('viewer-panel');
+            const query = document.getElementById('query-panel');
+
+            if (mode === 'doc') {
+                workspace.style.gridTemplateColumns = '250px 1fr 0px';
+                query.style.display = 'none';
+                viewer.style.display = 'flex';
+            } else if (mode === 'chat') {
+                workspace.style.gridTemplateColumns = '250px 0px 1fr';
+                viewer.style.display = 'none';
+                query.style.display = 'flex';
+            } else {
+                workspace.style.gridTemplateColumns = '300px 1fr 440px';
+                viewer.style.display = 'flex';
+                query.style.display = 'flex';
+            }
+        }
+
+        function reindexOCR() {
+            alert("Doc Scan: Re-running OCR pipeline, layout parser, and visual tensor extraction...");
+        }
+
+        function exportReport() {
+            alert("Doc Scan: Exporting cited evidence report with bounding box metadata (PDF)...");
+        }
+
+        function submitQuery() {
+            const input = document.getElementById('chat-input');
+            const container = document.getElementById('chat-tab');
+
+            if (!input.value.trim()) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.innerText = input.value;
+            container.appendChild(userMsg);
+
+            input.value = '';
+
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message assistant';
+                aiMsg.innerHTML = `
+                    <p>Doc Scan multi-modal result generated.</p>
+                    <div class="citation-card" onclick="highlightEvidence('bbox-p1-table', 'doc-page-1')">
+                        <div class="citation-header">
+                            <span>Q2_Q4_Production_Report.pdf • Page 1</span>
+                            <span class="citation-type type-table">Table Provenance</span>
+                        </div>
+                        <div class="citation-text">"Source matches scanned document index."</div>
+                    </div>
+                `;
+                container.appendChild(aiMsg);
+                container.scrollTop = container.scrollHeight;
+            }, 500);
+
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html>

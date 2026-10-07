@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multimodal Document Intelligence | HNX26PSI01</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --border-color: #334155;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            font-weight: 600;
+        }
+
+        /* Main Workspace */
+        .workspace {
+            display: grid;
+            grid-template-columns: 320px 1fr 400px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Column 1: Document Explorer & Upload */
+        .sidebar {
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            gap: 16px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .doc-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .doc-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .doc-item.active {
+            border-color: var(--accent-blue);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Column 2: Document Visualizer */
+        .viewer-container {
+            position: relative;
+            background-color: #020617;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .doc-page {
+            width: 100%;
+            max-width: 650px;
+            background-color: #ffffff;
+            color: #000;
+            padding: 40px;
+            border-radius: 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .doc-page h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #1e293b;
+        }
+
+        .doc-page p {
+            font-size: 0.85rem;
+            color: #334155;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.8rem;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #f1f5f9;
+        }
+
+        /* Bounding Box Highlight */
+        .highlight-box {
+            position: absolute;
+            border: 2px solid #ef4444;
+            background-color: rgba(239, 68, 68, 0.15);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        /* Column 3: AI Query & Evidence Panel */
+        .query-panel {
+            background-color: var(--panel-bg);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-message {
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .chat-message.user {
+            background-color: rgba(59, 130, 246, 0.15);
+            padding: 10px 14px;
+            border-radius: 8px;
+            align-self: flex-end;
+            max-width: 90%;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .chat-message.system {
+            background-color: rgba(255, 255, 255, 0.03);
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .citation-tag {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            font-size: 0.72rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .citation-tag:hover {
+            background-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .input-bar {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-blue);
+        }
+
+        button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="brand-title">
+            <span>HNX26PSI01</span>
+            <span style="color: var(--text-muted);">/</span>
+            <span>Multimodal Document Intelligence</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <span class="badge">RAG Active</span>
+            <span class="badge" style="border-color: rgba(16, 185, 129, 0.4); color: var(--accent-green);">Vision-Language Model</span>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        
+        <!-- Left: Document List & Ingestion -->
+        <div class="sidebar">
+            <div class="section-title">Document Collection</div>
+            <div class="upload-area">
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Drag & drop mixed PDFs or images</p>
+                <p style="font-size: 0.75rem; color: var(--accent-blue); margin-top: 4px;">Supports OCR, Tables & Charts</p>
+            </div>
+            
+            <ul class="doc-list">
+                <li class="doc-item active">
+                    <div>
+                        <div style="font-weight: 600;">Q2_Q4_Production_Report.pdf</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">3 pages • Mixed Layout</div>
+                    </div>
+                </li>
+                <li class="doc-item">
+                    <div>
+                        <div style="font-weight: 600;">Supply_Chain_Overview.pdf</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">1 page • Scanned Table</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Center: Interactive Document Viewer -->
+        <div class="viewer-container" id="viewer">
+            <div class="doc-page" id="page-1">
+                <div id="bbox-1" class="highlight-box" style="top: 130px; left: 35px; width: 580px; height: 110px; display: none;"></div>
+                <h3>1. Production Overview (Q2 vs Q4)</h3>
+                <p>During Q2, manufacturing output faced temporary delays due to raw material logistics, resulting in a baseline efficiency rating of 68%. By Q4, system automation and updated shifts improved raw output capacity considerably.</p>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Quarter</th>
+                            <th>Efficiency Rating</th>
+                            <th>Downtime (Hrs)</th>
+                            <th>Scrap Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Q2</td>
+                            <td>68%</td>
+                            <td>142 hrs</td>
+                            <td>4.2%</td>
+                        </tr>
+                        <tr>
+                            <td>Q4</td>
+                            <td>89%</td>
+                            <td>38 hrs</td>
+                            <td>1.1%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-page" id="page-2">
+                <div id="bbox-2" class="highlight-box" style="top: 60px; left: 35px; width: 580px; height: 180px; display: none;"></div>
+                <h3>2. Efficiency Drivers & Visual Analysis</h3>
+                <p>Cross-referencing telemetry logs reveals three main drivers for the 21% efficiency increase observed between Q2 and Q4:</p>
+                <div style="border: 1px dashed #cbd5e1; padding: 15px; border-radius: 4px; background-color: #fafafa; margin-top: 10px;">
+                    <div style="font-weight: bold; font-size: 0.8rem; margin-bottom: 6px; color: #475569;">[Visual Chart: Telemetry Downtime Breakdown]</div>
+                    <ul style="font-size: 0.8rem; padding-left: 20px; color: #334155;">
+                        <li><strong>Automated Inspection Deployment:</strong> Reduced manual inspection bottleneck by 45 hours.</li>
+                        <li><strong>Logistics Pipeline Re-routing:</strong> Reduced raw material shortage downtime by 59 hours.</li>
+                        <li><strong>Predictive Maintenance Integration:</strong> Reduced unexpected machine failures from 38 hours down to 0 hours.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Multimodal AI Reasoning & Citations -->
+        <div class="query-panel">
+            <div class="chat-history" id="chat-history">
+                <div class="chat-message user">
+                    Compare production efficiency between Q2 and Q4, identify the three biggest reasons for the change, and show me the proof.
+                </div>
+
+                <div class="chat-message system">
+                    <p>Production efficiency increased by <strong>21%</strong> from Q2 (68%) to Q4 (89%).</p>
+                    
+                    <div class="citation-tag" onclick="highlightEvidence('bbox-1', 'page-1')">
+                        Source: Q2_Q4_Production_Report.pdf • Page 1 • Table 1.1
+                    </div>
+
+                    <p style="margin-top: 12px;">The three biggest reasons for this increase identified from visual telemetry chart reasoning are:</p>
+                    <ol style="padding-left: 18px; margin-top: 6px;">
+                        <li><strong>Logistics Re-routing:</strong> Saved 59 hrs downtime.</li>
+                        <li><strong>Automated Inspection:</strong> Saved 45 hrs bottleneck.</li>
+                        <li><strong>Predictive Maintenance:</strong> Eliminated 38 hrs failure downtime.</li>
+                    </ol>
+
+                    <div class="citation-tag" onclick="highlightEvidence('bbox-2', 'page-2')">
+                        Source: Q2_Q4_Production_Report.pdf • Page 2 • Visual Chart Reasoning
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-bar">
+                <input type="text" id="user-input" placeholder="Ask a question across text, tables & charts...">
+                <button onclick="handleSend()">Ask AI</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function highlightEvidence(boxId, pageId) {
+            // Hide all highlights
+            document.querySelectorAll('.highlight-box').forEach(el => el.style.display = 'none');
+            
+            // Show target bounding box
+            const box = document.getElementById(boxId);
+            const page = document.getElementById(pageId);
+            
+            if (box && page) {
+                box.style.display = 'block';
+                page.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function handleSend() {
+            const input = document.getElementById('user-input');
+            const history = document.getElementById('chat-history');
+            
+            if (!input.value.trim()) return;
+
+            // Render User Message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-message user';
+            userMsg.innerText = input.value;
+            history.appendChild(userMsg);
+
+            const queryText = input.value;
+            input.value = '';
+
+            // Simulate AI Processing & Multi-modal Citation Response
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'chat-message system';
+                aiMsg.innerHTML = `
+                    <p>Processed query using Vision-Language RAG pipeline.</p>
+                    <p style="margin-top:6px;"><strong>Answer:</strong> Analysis across document text and embedded charts confirms match.</p>
+                    <div class="citation-tag" onclick="highlightEvidence('bbox-1', 'page-1')">
+                        Source: Q2_Q4_Production_Report.pdf • Page 1 • Section 1
+                    </div>
+                `;
+                history.appendChild(aiMsg);
+                history.scrollTop = history.scrollHeight;
+            }, 600);
+
+            history.scrollTop = history.scrollHeight;
+        }
+    </script>
+</body>
+</html>

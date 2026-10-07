@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocMind Enterprise | Universal Document Intelligence Platform</title>
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --panel-bg: #111827;
+            --panel-sub: #172133;
+            --panel-border: #1e293b;
+            --accent-blue: #2563eb;
+            --accent-blue-hover: #1d4ed8;
+            --accent-cyan: #0284c7;
+            --accent-green: #059669;
+            --accent-purple: #7c3aed;
+            --accent-red: #dc2626;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --highlight-border: #ef4444;
+            --highlight-bg: rgba(239, 68, 68, 0.12);
+            --doc-bg: #ffffff;
+            --doc-text: #0f172a;
+        }
+
+        body.light-theme {
+            --bg-main: #f8fafc;
+            --panel-bg: #ffffff;
+            --panel-sub: #f1f5f9;
+            --panel-border: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 14px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* Top Header Navigation */
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-blue), #38bdf8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-action {
+            background-color: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover, .btn-action.active-page {
+            border-color: var(--accent-blue);
+            background-color: rgba(37, 99, 235, 0.15);
+        }
+
+        .badge {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: #38bdf8;
+            font-size: 0.72rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            font-weight: 600;
+        }
+
+        /* Toolbar Options Header */
+        .toolbar {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 8px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .select-input {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            border: 1px solid var(--panel-border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 0.75rem;
+        }
+
+        /* Workspace Grid Layout */
+        .workspace {
+            display: grid;
+            grid-template-columns: 320px 1fr 480px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar: Document Explorer */
+        .sidebar {
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            width: 100%;
+            background-color: var(--bg-main);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .upload-dropzone {
+            border: 1px dashed rgba(56, 189, 248, 0.4);
+            border-radius: 6px;
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0 16px 12px 16px;
+            background-color: rgba(37, 99, 235, 0.03);
+        }
+
+        .upload-dropzone:hover {
+            border-color: #38bdf8;
+            background-color: rgba(56, 189, 248, 0.08);
+        }
+
+        .doc-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+            padding: 0 12px 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .doc-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            background-color: var(--panel-sub);
+            border: 1px solid var(--panel-border);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-item:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .doc-item.active {
+            border-color: var(--accent-blue);
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .doc-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .doc-item-title {
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .doc-item-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-delete-doc {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-left: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-delete-doc:hover {
+            background-color: rgba(220, 38, 38, 0.15);
+            color: var(--accent-red);
+        }
+
+        /* Center Canvas Workspace */
+        .viewer-container {
+            background-color: #060913;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 28px;
+            align-items: center;
+            position: relative;
+        }
+
+        .doc-canvas {
+            width: 100%;
+            max-width: 740px;
+            background-color: var(--doc-bg);
+            color: var(--doc-text);
+            padding: 36px;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            margin-bottom: 24px;
+            transform-origin: top center;
+            transition: transform 0.2s ease;
+        }
+
+        .doc-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .doc-header h2 {
+            font-size: 1.15rem;
+            color: #0f172a;
+        }
+
+        .doc-canvas p {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #334155;
+            margin-bottom: 16px;
+        }
+
+        .canvas-image-render {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            display: block;
+            margin: 12px 0;
+        }
+
+        .canvas-text-render {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-size: 0.82rem;
+            color: #1e293b;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.8rem;
+        }
+
+        .doc-table th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 700;
+            text-align: left;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .doc-table td {
+            padding: 9px 12px;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+        }
+
+        .chart-box {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 18px;
+            margin: 16px 0;
+        }
+
+        .chart-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 16px;
+            height: 120px;
+            padding-top: 20px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .chart-bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .chart-bar {
+            width: 100%;
+            background-color: var(--accent-blue);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+        }
+
+        .bar-val {
+            position: absolute;
+            top: -18px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .bar-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        /* Bounding Box Highlights */
+        .bounding-box {
+            position: absolute;
+            border: 2px solid var(--highlight-border);
+            background-color: var(--highlight-bg);
+            border-radius: 4px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+            z-index: 5;
+            display: none;
+        }
+
+        .bounding-box-label {
+            position: absolute;
+            top: -22px;
+            left: -2px;
+            background-color: var(--highlight-border);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px 3px 0 0;
+            white-space: nowrap;
+        }
+
+        /* Source Badge Tag */
+        .source-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: rgba(5, 150, 105, 0.12);
+            color: #10b981;
+            border: 1px solid rgba(5, 150, 105, 0.25);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .source-tag:hover {
+            background-color: rgba(5, 150, 105, 0.22);
+        }
+
+        /* Suggested Questions Component */
+        .suggested-questions-box {
+            background-color: var(--panel-sub);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .suggested-title {
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .suggested-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background-color: var(--bg-main);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.78rem;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggested-btn:hover {
+            border-color: var(--accent-blue);
+            background-color: rgba(37, 99, 235, 0.1);
+            color: #ffffff;
+        }
+
+        /* Right Panel: AI Reasoning Workspace */
+        .query-panel {
+            background-color: var(--panel-bg);
+            border-left: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--panel-border);
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-tab {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--accent-blue);
+            background-color: rgba(37, 99, 235, 0.04);
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            max-width: 88%;
+            background-color: rgba(37, 99, 235, 0.15);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            padding: 10px 14px;
+            border-radius: 8px 8px 0 8px;
+            color: var(--text-primary);
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            width: 100%;
+            background-color: var(--panel-sub);
+            border: 1px solid var(--panel-border);
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        .quick-chips-container {
+            display: flex;
+            gap: 6px;
+            padding: 8px 16px;
+            background-color: rgba(0,0,0,0.15);
+            overflow-x: auto;
+            border-top: 1px solid var(--panel-border);
+        }
+
+        .chip {
+            background-color: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.25);
+            color: #38bdf8;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            background-color: rgba(37, 99, 235, 0.25);
+            color: #ffffff;
+        }
+
+        .reasoning-box {
+            background-color: var(--bg-main);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .reasoning-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .input-container {
+            padding: 14px 16px;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            gap: 8px;
+            background-color: var(--panel-bg);
+        }
+
+        .chat-input {
+            flex: 1;
+            background-color: var(--bg-main);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-blue-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <header>
+        <div class="brand">
+            <div class="brand-logo">dm</div>
+            <span>DocMind Enterprise</span>
+            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">| Universal Document Intelligence Platform</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-action" onclick="askSuggestedQuestions()">❓ Propose Questions</button>
+            <button class="btn-action" onclick="reindexOCR()">↻ Re-index Engine</button>
+            <button class="btn-action" onclick="exportReport()">📥 Export Audit</button>
+            <button class="btn-action" onclick="toggleTheme()">🌓 Theme</button>
+            <span class="badge">ENTERPRISE-AI-v5.0</span>
+        </div>
+    </header>
+
+    <!-- Toolbar Options -->
+    <div class="toolbar">
+        <div class="tool-group">
+            <span><strong>View Mode:</strong></span>
+            <select class="select-input" onchange="changeViewMode(this.value)">
+                <option value="dual">Dual Workspace (Canvas + AI Engine)</option>
+                <option value="doc">Document Canvas Only</option>
+                <option value="chat">Reasoning Engine Only</option>
+            </select>
+            
+            <span style="margin-left: 12px;"><strong>Navigate Canvas:</strong></span>
+            <button class="btn-action" id="btn-page-1" onclick="jumpToPage('doc-page-1')">Page 1 (Tables & Text)</button>
+            <button class="btn-action" id="btn-page-2" onclick="jumpToPage('doc-page-2')">Page 2 (Telemetry Chart)</button>
+        </div>
+
+        <div class="tool-group">
+            <span><strong>Canvas Zoom:</strong></span>
+            <button class="btn-action" onclick="adjustZoom(-0.1)">-</button>
+            <span id="zoom-level">100%</span>
+            <button class="btn-action" onclick="adjustZoom(0.1)">+</button>
+            <button class="btn-action" onclick="resetZoom()">Reset</button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace" id="workspace">
+
+        <!-- Sidebar: Ingestion Explorer -->
+        <div class="sidebar" id="sidebar-panel">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <span>Active Vector Memory</span>
+                    <span style="color: #38bdf8;" id="doc-count">2 Documents</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="search-docs" class="search-box" placeholder="Search document memory..." oninput="filterDocuments(this.value)">
+                    <button class="btn-action" onclick="clearAllDocs()" title="Clear All Documents" style="padding: 4px 8px; color: var(--accent-red);">Clear</button>
+                </div>
+            </div>
+
+            <!-- Upload Dropzone -->
+            <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.bmp,.txt,.csv,.log,.json,.md,.js,.py,.html" multiple style="display: none;" onchange="handleFileUpload(event)">
+            <div class="upload-dropzone" onclick="document.getElementById('file-input').click()">
+                <div style="font-weight: 700; font-size: 0.82rem; color: #38bdf8;">+ Upload Document, Image, or Code</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 3px;">Supports PDF, Tables, Screenshots, Logs & Code</div>
+            </div>
+
+            <ul class="doc-list" id="doc-list">
+                <li class="doc-item active" id="doc-item-1" onclick="focusDocumentCanvas('doc-page-1')">
+                    <div class="doc-info">
+                        <div class="doc-item-title">Q2_Q4_Production_Report.pdf</div>
+                        <div class="doc-item-meta">
+                            <span>2 Pages • Executive PDF</span>
+                            <span style="color: var(--accent-green);">Vectorized</span>
+                        </div>
+                    </div>
+                    <button class="btn-delete-doc" onclick="deleteDoc(event, this)" title="Delete Document">✕</button>
+                </li>
+                <li class="doc-item" id="doc-item-2" onclick="focusDocumentCanvas('doc-page-2')">
+                    <div class="doc-info">
+                        <div class="doc-item-title">Supply_Chain_Telemetry.pdf</div>
+                        <div class="doc-item-meta">
+                            <span>1 Page • Visual Graph</span>
+                            <span style="color: var(--accent-green);">OCR Complete</span>
+                        </div>
+                    </div>
+                    <button class="btn-delete-doc" onclick="deleteDoc(event, this)" title="Delete Document">✕</button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Center Canvas Viewer -->
+        <div class="viewer-container" id="viewer-panel">
+            
+            <div class="doc-canvas" id="doc-page-1">
+                <div id="bbox-p1-table" class="bounding-box">
+                    <div class="bounding-box-label">Source Origin: Page 1 • Table 1.1 [x:35, y:120, w:570, h:120]</div>
+                </div>
+
+                <div class="doc-header">
+                    <h2>1. Executive Summary & Production Efficiency Metrics</h2>
+                    <span style="font-size: 0.75rem; color: #64748b;">PDF Page 1</span>
+                </div>
+
+                <p>
+                    This document provides formal verification of operational throughput comparing Q2 and Q4 manufacturing cycles.
+                    Baseline efficiency in Q2 was impacted by supply bottlenecks, whereas Q4 deployed automated vision inspection and predictive maintenance.
+                </p>
+
+                <table class="doc-table">
+                    <thead>
+                        <tr>
+                            <th>Quarter Cycle</th>
+                            <th>Efficiency (%)</th>
+                            <th>Downtime (Hrs)</th>
+                            <th>Scrap Rate (%)</th>
+                            <th>Operating Cost ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Q2 Baseline</strong></td>
+                            <td>68%</td>
+                            <td>142 hrs</td>
+                            <td>4.2%</td>
+                            <td>$1,240,000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Q4 Final</strong></td>
+                            <td>89%</td>
+                            <td>38 hrs</td>
+                            <td>1.1%</td>
+                            <td>$890,000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-canvas" id="doc-page-2">
+                <div id="bbox-p2-chart" class="bounding-box">
+                    <div class="bounding-box-label">Source Origin: Page 2 • Figure 2.1 [x:35, y:130, w:570, h:200]</div>
+                </div>
+
+                <div class="doc-header">
+                    <h2>2. Telemetry Root-Cause Analysis & Visual Breakdown</h2>
+                    <span style="font-size: 0.75rem; color: #64748b;">PDF Page 2</span>
+                </div>
+
+                <p>
+                    Visual breakdown detailing total downtime hours eliminated between Q2 and Q4 cycles. Data cross-referenced with onboard IoT sensors and plant supervisor shift records.
+                </p>
+
+                <div class="chart-box">
+                    <div class="chart-title">
+                        <span>Figure 2.1: Downtime Reduction Breakdown (Hours Saved)</span>
+                        <span style="color: var(--accent-purple); font-size: 0.7rem;">[Vision Optical Extracted Chart]</span>
+                    </div>
+                    <div class="chart-bars">
+                        <div class="chart-bar-col">
+                            <div class="chart-bar" style="height: 100%;">
+                                <div class="bar-val">59h</div>
+                            </div>
+                            <div class="bar-label">Logistics Re-routing</div>
+                        </div>
+                        <div class="chart-bar-col">
+                            <div class="chart-bar" style="height: 76%;">
+                                <div class="bar-val">45h</div>
+                            </div>
+                            <div class="bar-label">Automated Inspection</div>
+                        </div>
+                        <div class="chart-bar-col">
+                            <div class="chart-bar" style="height: 64%;">
+                                <div class="bar-val">38h</div>
+                            </div>
+                            <div class="bar-label">Predictive Maintenance</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right AI Workspace -->
+        <div class="query-panel" id="query-panel">
+            <div class="panel-tab-bar">
+                <div class="panel-tab active">Executive Reasoning Engine</div>
+            </div>
+
+            <div class="chat-container" id="chat-tab">
+                <div class="message assistant">
+                    👋 Welcome to <strong>DocMind Enterprise</strong>. I perform multimodal analysis across documents, tables, charts, and photos—and proactively suggest relevant questions based on your ingested content.
+                </div>
+            </div>
+
+            <div class="quick-chips-container">
+                <span class="chip" onclick="quickQuery('What is on Page 1?')">📄 Page 1 Breakdown</span>
+                <span class="chip" onclick="quickQuery('What are the main headings and subtopics?')">📌 Topic Outline</span>
+                <span class="chip" onclick="quickQuery('How many pages are in this document?')">📑 Page Count</span>
+                <span class="chip" onclick="quickQuery('Suggest questions to ask about this document')">❓ Propose Questions</span>
+            </div>
+
+            <div class="input-container">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Ask a question or request suggested queries..." onkeypress="handleKeyPress(event)">
+                <button class="btn-submit" onclick="submitQuery()">Analyze</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentZoom = 1.0;
+        let totalDocs = 2;
+        let userName = "";
+        let uploadedFilesStore = {}; 
+
+        function updateDocCount() {
+            document.getElementById('doc-count').innerText = `${totalDocs} Document${totalDocs === 1 ? '' : 's'}`;
+        }
+
+        function selectDoc(docElement) {
+            document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
+            docElement.classList.add('active');
+        }
+
+        function focusDocumentCanvas(canvasId) {
+            const el = document.getElementById(canvasId);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function deleteDoc(event, btn) {
+            event.stopPropagation();
+            const docItem = btn.closest('.doc-item');
+            
+            if (docItem) {
+                const docId = docItem.id;
+                delete uploadedFilesStore[docId];
+                
+                const targetCanvas = document.getElementById(`canvas-${docId}`);
+                if (targetCanvas) targetCanvas.remove();
+
+                docItem.remove();
+                totalDocs = Math.max(0, totalDocs - 1);
+                updateDocCount();
+
+                if (docItem.classList.contains('active')) {
+                    const remainingDocs = document.querySelectorAll('.doc-item');
+                    if (remainingDocs.length > 0) {
+                        remainingDocs[0].classList.add('active');
+                    }
+                }
+            }
+        }
+
+        function filterDocuments(term) {
+            const query = term.toLowerCase().trim();
+            const docItems = document.querySelectorAll('.doc-item');
+            docItems.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function clearAllDocs() {
+            if (confirm("Are you sure you want to clear all active documents from memory?")) {
+                document.getElementById('doc-list').innerHTML = '';
+                document.getElementById('viewer-panel').innerHTML = '';
+                uploadedFilesStore = {};
+                totalDocs = 0;
+                updateDocCount();
+            }
+        }
+
+        function askSuggestedQuestions() {
+            quickQuery("Suggest questions to ask about this document");
+        }
+
+        /* Multimodal Upload Handler */
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            Array.from(files).forEach((file, index) => {
+                totalDocs++;
+                const list = document.getElementById('doc-list');
+                const viewer = document.getElementById('viewer-panel');
+                
+                const fileId = `doc-file-uploaded-${Date.now()}-${index}`;
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const formattedSize = (file.size / 1024 < 1024) 
+                    ? (file.size / 1024).toFixed(1) + ' KB' 
+                    : (file.size / 1024 / 1024).toFixed(1) + ' MB';
+
+                const isImage = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'].includes(fileExt);
+                const isText = ['txt', 'csv', 'log', 'json', 'md', 'js', 'py', 'html', 'css'].includes(fileExt);
+
+                const categoryLabel = isImage ? 'Image File' : (isText ? 'Text/Code File' : 'PDF Document');
+
+                const li = document.createElement('li');
+                li.className = 'doc-item active';
+                li.id = fileId;
+                li.onclick = function() {
+                    selectDoc(this);
+                    focusDocumentCanvas(`canvas-${fileId}`);
+                };
+                
+                document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
+
+                li.innerHTML = `
+                    <div class="doc-info">
+                        <div class="doc-item-title">${file.name}</div>
+                        <div class="doc-item-meta">
+                            <span>${formattedSize} • ${categoryLabel}</span>
+                            <span style="color: var(--accent-green);">Parsed</span>
+                        </div>
+                    </div>
+                    <button class="btn-delete-doc" onclick="deleteDoc(event, this)" title="Delete Document">✕</button>
+                `;
+                list.insertBefore(li, list.firstChild);
+
+                const pageCanvas = document.createElement('div');
+                pageCanvas.className = 'doc-canvas';
+                pageCanvas.id = `canvas-${fileId}`;
+
+                const pageHeader = `
+                    <div class="doc-header">
+                        <h2>${file.name}</h2>
+                        <span style="font-size: 0.75rem; color: #0284c7; font-weight: 700;">[Center Canvas Render]</span>
+                    </div>
+                `;
+
+                if (isImage) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imgUrl = e.target.result;
+                        pageCanvas.innerHTML = `
+                            ${pageHeader}
+                            <p><strong>Optical OCR Stream Active:</strong> Spatial image rendered into workspace.</p>
+                            <img src="${imgUrl}" class="canvas-image-render" alt="${file.name}">
+                        `;
+                        uploadedFilesStore[file.name] = { type: 'image', name: file.name, size: formattedSize };
+                        pageCanvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    };
+                    reader.readAsDataURL(file);
+                } else if (isText) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const textContent = e.target.result;
+                        pageCanvas.innerHTML = `
+                            ${pageHeader}
+                            <p><strong>Structured Code/Text Buffer Extracted:</strong></p>
+                            <div class="canvas-text-render">${escapeHtml(textContent)}</div>
+                        `;
+                        uploadedFilesStore[file.name] = { type: 'text', name: file.name, content: textContent, size: formattedSize };
+                        pageCanvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    };
+                    reader.readAsText(file);
+                } else {
+                    pageCanvas.innerHTML = `
+                        ${pageHeader}
+                        <p><strong>PDF Matrix Extracted:</strong> Document active in workspace memory.</p>
+                        <div style="padding: 24px; background: #f8fafc; border: 1px dashed #cbd5e1; text-align: center; border-radius: 6px; color: #1e293b;">
+                            📄 <strong>${file.name}</strong> (${formattedSize}) loaded in workspace center.
+                        </div>
+                    `;
+                    uploadedFilesStore[file.name] = { type: 'pdf', name: file.name, size: formattedSize };
+                    pageCanvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
+                viewer.insertBefore(pageCanvas, viewer.firstChild);
+            });
+
+            updateDocCount();
+            event.target.value = '';
+
+            const container = document.getElementById('chat-tab');
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'message assistant';
+            aiMsg.innerHTML = `
+                <div class="reasoning-box">
+                    <div class="reasoning-header">⚡ Document Ingested Into Memory</div>
+                    <div>Extracted document layout structure and generated contextual queries.</div>
+                </div>
+                Your file has been loaded into the workspace canvas. Here are suggested questions:
+                ${generateSuggestedQuestionsHTML()}
+            `;
+            container.appendChild(aiMsg);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function highlightEvidence(boxId, pageId) {
+            document.querySelectorAll('.bounding-box').forEach(el => el.style.display = 'none');
+            const bbox = document.getElementById(boxId);
+            const page = document.getElementById(pageId);
+
+            if (bbox && page) {
+                bbox.style.display = 'block';
+                if (boxId === 'bbox-p1-table') {
+                    const table = page.querySelector('.doc-table');
+                    if (table) {
+                        bbox.style.top = table.offsetTop + 'px';
+                        bbox.style.left = table.offsetLeft + 'px';
+                        bbox.style.width = table.offsetWidth + 'px';
+                        bbox.style.height = table.offsetHeight + 'px';
+                    }
+                } else if (boxId === 'bbox-p2-chart') {
+                    const chart = page.querySelector('.chart-box');
+                    if (chart) {
+                        bbox.style.top = chart.offsetTop + 'px';
+                        bbox.style.left = chart.offsetLeft + 'px';
+                        bbox.style.width = chart.offsetWidth + 'px';
+                        bbox.style.height = chart.offsetHeight + 'px';
+                    }
+                }
+                page.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function adjustZoom(delta) {
+            currentZoom = Math.min(Math.max(0.6, currentZoom + delta), 1.4);
+            document.querySelectorAll('.doc-canvas').forEach(el => {
+                el.style.transform = `scale(${currentZoom})`;
+            });
+            document.getElementById('zoom-level').innerText = `${Math.round(currentZoom * 100)}%`;
+        }
+
+        function resetZoom() {
+            currentZoom = 1.0;
+            document.querySelectorAll('.doc-canvas').forEach(el => {
+                el.style.transform = 'scale(1)';
+            });
+            document.getElementById('zoom-level').innerText = '100%';
+        }
+
+        function jumpToPage(pageId) {
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.querySelectorAll('#btn-page-1, #btn-page-2').forEach(b => b.classList.remove('active-page'));
+                if(pageId === 'doc-page-1') document.getElementById('btn-page-1').classList.add('active-page');
+                if(pageId === 'doc-page-2') document.getElementById('btn-page-2').classList.add('active-page');
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        function changeViewMode(mode) {
+            const workspace = document.getElementById('workspace');
+            const viewer = document.getElementById('viewer-panel');
+            const query = document.getElementById('query-panel');
+
+            if (mode === 'doc') {
+                workspace.style.gridTemplateColumns = '280px 1fr 0px';
+                query.style.display = 'none';
+                viewer.style.display = 'flex';
+            } else if (mode === 'chat') {
+                workspace.style.gridTemplateColumns = '280px 0px 1fr';
+                viewer.style.display = 'none';
+                query.style.display = 'flex';
+            } else {
+                workspace.style.gridTemplateColumns = '320px 1fr 480px';
+                viewer.style.display = 'flex';
+                query.style.display = 'flex';
+            }
+        }
+
+        function reindexOCR() {
+            alert("DocMind Engine: Re-running layout recognition, OCR extraction, and structural vector indexing...");
+        }
+
+        function exportReport() {
+            const auditData = {
+                timestamp: new Date().toISOString(),
+                totalActiveDocs: totalDocs,
+                ingestedFiles: Object.keys(uploadedFilesStore),
+                engineStatus: "ENTERPRISE-AI-v5.0-ACTIVE"
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(auditData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "DocMind_Audit_Report.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') submitQuery();
+        }
+
+        function quickQuery(text) {
+            document.getElementById('chat-input').value = text;
+            submitQuery();
+        }
+
+        function generateSuggestedQuestionsHTML() {
+            return `
+                <div class="suggested-questions-box">
+                    <div class="suggested-title">💡 Contextual Question Suggestions</div>
+                    <button class="suggested-btn" onclick="quickQuery('What is on Page 1?')">📄 What is on Page 1?</button>
+                    <button class="suggested-btn" onclick="quickQuery('What are the main headings and subtopics?')">📌 What are the main headings and subtopics?</button>
+                    <button class="suggested-btn" onclick="quickQuery('Calculate total operating cost savings')">💰 Calculate operating cost savings</button>
+                    <button class="suggested-btn" onclick="quickQuery('What caused the downtime reduction on Page 2?')">📊 What caused downtime reduction on Page 2?</button>
+                    <button class="suggested-btn" onclick="quickQuery('Summarize the document')">📋 Summarize executive findings</button>
+                </div>
+            `;
+        }
+
+        /* Reasoning Engine Response Generator */
+        function generateAIResponse(userText) {
+            const text = userText.toLowerCase().trim();
+            const uploadedKeys = Object.keys(uploadedFilesStore);
+
+            if (text.includes("suggest questions") || text.includes("ask questions") || text.includes("what can i ask")) {
+                return `
+                    <div class="reasoning-box">
+                        <div class="reasoning-header">💡 Contextual Query Generator</div>
+                        <div>Extracted analytical questions based on active vector memory.</div>
+                    </div>
+                    <p>Select any suggested question below to run analysis:</p>
+                    ${generateSuggestedQuestionsHTML()}
+                `;
+            }
+
+            if (text.includes("how many pages") || text.includes("page count") || text.includes("total pages")) {
+                const count = document.querySelectorAll('.doc-canvas').length;
+                return `
+                    <div class="reasoning-box">
+                        <div class="reasoning-header">📑 Workspace Layout Analysis</div>
+                        <div>Active Canvas Count: <strong>${count} Document Canvases</strong></div>
+                    </div>
+                    <p><strong>Answer:</strong> There are currently <strong>${count} document canvases</strong> active in the center workspace area.</p>
+                    ${generateSuggestedQuestionsHTML()}
+                `;
+            }
+
+            if (text.includes("page 1") || text.includes("first page")) {
+                return `
+                    <div class="reasoning-box">
+                        <div class="reasoning-header">📄 Page 1 Structural Breakdown</div>
+                        <div>Origin File: <strong>Q2_Q4_Production_Report.pdf</strong></div>
+                    </div>
+                    <p><strong>Page 1 Content Summary:</strong></p>
+                    <ul style="padding-left: 18px; margin-top: 6px; font-size: 0.82rem; color: var(--text-secondary);">
+                        <li><strong>Heading:</strong> 1. Executive Summary & Production Efficiency Metrics</li>
+                        <li><strong>Text Body:</strong> Verifies operational throughput comparing Q2 and Q4 manufacturing cycles.</li>
+                        <li><strong>Table 1.1:</strong> Efficiency (%), Downtime (Hrs), Scrap Rate (%), Operating Cost ($).</li>
+                    </ul>
+                    <div class="source-tag" onclick="jumpToPage('doc-page-1')">
+                        📍 Jump to Page 1
+                    </div>
+                    ${generateSuggestedQuestionsHTML()}
+                `;
+            }
+
+            if (text.includes("page 2") || text.includes("second page")) {
+                return `
+                    <div class="reasoning-box">
+                        <div class="reasoning-header">📄 Page 2 Structural Breakdown</div>
+                        <div>Origin File: <strong>Supply_Chain_Telemetry.pdf</strong></div>
+                    </div>
+                    <p><strong>Page 2 Content Summary:</strong></p>
+                    <ul style="padding-left: 18px; margin-top: 6px; font-size: 0.82rem; color: var(--text-secondary);">
+                        <li><strong>Heading:</strong> 2. Telemetry Root-Cause Analysis & Visual Breakdown</li>
+                        <li><strong>Figure 2.1 Chart:</strong> Logistics Re-routing (59h), Automated Inspection (45h), Predictive Maintenance (38h).</li>
+                    </ul>
+                    <div class="source-tag" onclick="jumpToPage('doc-page-2')">
+                        📍 Jump to Page 2
+                    </div>
+                    ${generateSuggestedQuestionsHTML()}
+                `;
+            }
+
+            if (text.includes("heading") || text.includes("topic") || text.includes("subtopic") || text.includes("title")) {
+                return `
+                    <div class="reasoning-box">
+                        <div class="reasoning-header">📌 Document Hierarchy Outline</div>
+                    </div>
+                    <p><strong>Main Document Hierarchy:</strong></p>
+                    <p style="margin-top: 6px;"><strong>Main Topic:</strong> Production Efficiency & Telemetry Audit Report</p>
+                    <div style="margin-top: 8px; font-size: 0.83rem;">
+                        <strong>1. Executive Summary & Production Efficiency Metrics</strong>
+                        <ul style="padding-left: 20px; color: var(--text-secondary); margin-top: 4px;">
+                            <li>Subtopic 1.1: Q2 Baseline Throughput Bottlenecks</li>
+                            <li>Subtopic 1.2: Q4 Automated Inspection & Vision Deployments</li>
+                            <li>Subtopic 1.3: Efficiency, Scrap Rate & Cost Reductions</li>
+                        </ul>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.83rem;">
+                        <strong>2. Telemetry Root-Cause Analysis & Visual Breakdown</strong>
+                        <ul style="padding-left: 20px; color: var(--text-secondary); margin-top: 4px;">
+                            <li>Subtopic 2.1: IoT Telemetry & Downtime Elimination Drivers</li>
+                        </ul>
+                    </div>
+                    ${generateSuggestedQuestionsHTML()}
+                `;
+            }
+
+            if (text.includes("summary") || text.includes("summarize") || text.includes("overview")) {
+                return `
+                    <div class="reasoning-box">
+                        <div class="reasoning-header">📋 Executive Summary</div>
+                    </div>
+                    <p>Manufacturing throughput improved significantly between Q2 and Q4. Automated inspection and predictive maintenance increased efficiency from <strong>68% to 89%</strong>, decreased scrap rate from <strong>4.2% to 1.1%</strong>, and generated <strong>$350,000</strong> in quarterly savings.</p>
+                    ${generateSuggestedQuestionsHTML()}
+                `;
+            }
+
+            if (text.includes("cost") || text.includes("saving") || text.includes("calculate")) {
+                return `
+                    <div class="reasoning-box">
+                        <div class="reasoning-header">🧠 Cost Savings Calculation</div>
+                        <div>Source File: <strong>Q2_Q4_Production_Report.pdf (Table 1.1)</strong></div>
+                    </div>
+                    <p>Total Cost Savings = <strong>$1,240,000 (Q2) - $890,000 (Q4) = $350,000 (28.23% Cost Reduction)</strong>.</p>
+                    <div class="source-tag" onclick="highlightEvidence('bbox-p1-table', 'doc-page-1')">
+                        📍 Source: Page 1 | Table 1.1
+                    </div>
+                    ${generateSuggestedQuestionsHTML()}
+                `;
+            }
+
+            if (/^(hi|hello|hey|greetings)/i.test(text)) {
+                return `Greetings! I am ready to assist with your document analysis. Here are suggested queries: ${generateSuggestedQuestionsHTML()}`;
+            }
+
+            return `
+                <div class="reasoning-box">
+                    <div class="reasoning-header">🔍 Query Engine Processing</div>
+                    <div>Analyzed query: "<em>${escapeHtml(userText)}</em>"</div>
+                </div>
+                <p>Query processed. Here are recommended follow-up questions:</p>
+                ${generateSuggestedQuestionsHTML()}
+            `;
+        }
+
+        function submitQuery() {
+            const input = document.getElementById('chat-input');
+            const container = document.getElementById('chat-tab');
+            const queryText = input.value.trim();
+
+            if (!queryText) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.innerText = queryText;
+            container.appendChild(userMsg);
+
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message assistant';
+                aiMsg.innerHTML = generateAIResponse(queryText);
+                container.appendChild(aiMsg);
+                container.scrollTop = container.scrollHeight;
+            }, 350);
+        }
+    </script>
+</body>
+</html>
